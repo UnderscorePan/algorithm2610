@@ -1,0 +1,6 @@
+dataset_*.csv
+*.o
+*.obj
+*.exe
+*.out
+dataset_generator
