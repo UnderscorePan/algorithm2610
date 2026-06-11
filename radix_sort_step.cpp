@@ -12,11 +12,10 @@ struct Record {
     string str;
 };
 
-// format records for output
 string formatRecords(const vector<Record>& records) {
     stringstream ss;
     ss << "[";
-    for (int i = 0; i < records.size(); i++) {
+    for (int i = 0; i < (int)records.size(); i++) {
         if (i > 0) ss << ", ";
         ss << records[i].num << "/" << records[i].str;
     }
@@ -24,14 +23,17 @@ string formatRecords(const vector<Record>& records) {
     return ss.str();
 }
 
-// stable counting sort for digit position p (0 = rightmost)
-void countingSort(vector<Record>& records, int p) {
-    int n = records.size();
+int getDigit(long long num, int digitPos) {
+    return (num / (long long)pow(10, digitPos)) % 10;
+}
+
+void countingSortByDigit(vector<Record>& records, int digitPos) {
+    int n = (int)records.size();
     vector<Record> output(n);
     vector<int> count(10, 0);
     
     for (int i = 0; i < n; i++) {
-        int digitValue = (records[i].num / (long long)pow(10, p)) % 10;
+        int digitValue = getDigit(records[i].num, digitPos);
         count[digitValue]++;
     }
     
@@ -40,7 +42,7 @@ void countingSort(vector<Record>& records, int p) {
     }
     
     for (int i = n - 1; i >= 0; i--) {
-        int digitValue = (records[i].num / (long long)pow(10, p)) % 10;
+        int digitValue = getDigit(records[i].num, digitPos);
         output[count[digitValue] - 1] = records[i];
         count[digitValue]--;
     }
@@ -48,7 +50,6 @@ void countingSort(vector<Record>& records, int p) {
     records = output;
 }
 
-// extract dataset size from filename (dataset_1000.csv -> 1000)
 int getDatasetSize(const string& filename) {
     size_t pos = filename.find("dataset_");
     if (pos != string::npos) {
@@ -61,6 +62,40 @@ int getDatasetSize(const string& filename) {
     return 0;
 }
 
+bool readRowRange(const string& filename, int startRow, int endRow, vector<Record>& records) {
+    ifstream inputFile(filename);
+    if (!inputFile.is_open()) {
+        return false;
+    }
+
+    string line;
+    int currentRow = 0;
+
+    while (getline(inputFile, line)) {
+        currentRow++;
+
+        if (currentRow < startRow) continue;
+        if (currentRow > endRow) break;
+
+        size_t commaPos = line.find(',');
+        if (commaPos != string::npos) {
+            long long num = stoll(line.substr(0, commaPos));
+            string str = line.substr(commaPos + 1);
+            records.push_back({num, str});
+        }
+    }
+
+    return true;
+}
+
+string getStepOutputFilename(const string& inputFilename, int startRow, int endRow) {
+    int datasetSize = getDatasetSize(inputFilename);
+    stringstream outputSS;
+    outputSS << "dataset_" << datasetSize << "_radix_sorted_step_"
+             << startRow << "_" << endRow << ".txt";
+    return outputSS.str();
+}
+
 int main(int argc, char* argv[]) {
     if (argc != 4) {
         cerr << "Usage: " << argv[0] << " <dataset_file.csv> <start_row> <end_row>" << endl;
@@ -70,57 +105,32 @@ int main(int argc, char* argv[]) {
     string filename = argv[1];
     int startRow = stoi(argv[2]);
     int endRow = stoi(argv[3]);
-    
-    ifstream inputFile(filename);
-    if (!inputFile.is_open()) {
+
+    vector<Record> records;
+    if (!readRowRange(filename, startRow, endRow, records)) {
         cerr << "Error: Could not open file " << filename << endl;
         return 1;
     }
-    
-    vector<Record> records;
-    string line;
-    int currentRow = 0;
-    
-    // read only rows in range [startRow, endRow]
-    while (getline(inputFile, line)) {
-        currentRow++;
-        
-        if (currentRow < startRow) continue;
-        if (currentRow > endRow) break;
-        
-        size_t commaPos = line.find(',');
-        if (commaPos != string::npos) {
-            long long num = stoll(line.substr(0, commaPos));
-            string str = line.substr(commaPos + 1);
-            records.push_back({num, str});
-        }
-    }
-    inputFile.close();
     
     if (records.empty()) {
         cerr << "Error: start_row or end_row out of range for file " << filename << endl;
         return 1;
     }
-    
-    // generate output filename
-    int datasetSize = getDatasetSize(filename);
-    stringstream outputSS;
-    outputSS << "dataset_" << datasetSize << "_radix_sorted_step_" << startRow << "_" << endRow << ".txt";
-    string outputFilename = outputSS.str();
+
+    string outputFilename = getStepOutputFilename(filename, startRow, endRow);
     
     ofstream outputFile(outputFilename);
     if (!outputFile.is_open()) {
         cerr << "Error: Could not create output file " << outputFilename << endl;
         return 1;
     }
-    
-    // write original array
+
     outputFile << formatRecords(records) << " original" << endl;
-    
-    // 10 digit passes: d=10 (rightmost) to d=1 (leftmost)
-    for (int digit = 0; digit < 10; digit++) {
-        countingSort(records, digit);
-        int d = 10 - digit;
+
+    const int totalDigits = 10;
+    for (int digitPos = 0; digitPos < totalDigits; digitPos++) {
+        countingSortByDigit(records, digitPos);
+        int d = 10 - digitPos;
         outputFile << formatRecords(records) << " d=" << d << endl;
     }
     

@@ -14,14 +14,17 @@ struct Record {
     string str;
 };
 
-// stable counting sort for digit position d (0 = rightmost)
-void countingSort(vector<Record>& records, int digit) {
-    int n = records.size();
+int getDigit(long long num, int digitPos) {
+    return (num / (long long)pow(10, digitPos)) % 10;
+}
+
+void countingSortByDigit(vector<Record>& records, int digitPos) {
+    int n = (int)records.size();
     vector<Record> output(n);
     vector<int> count(10, 0);
     
     for (int i = 0; i < n; i++) {
-        int digitValue = (records[i].num / (long long)pow(10, digit)) % 10;
+        int digitValue = getDigit(records[i].num, digitPos);
         count[digitValue]++;
     }
     
@@ -30,17 +33,17 @@ void countingSort(vector<Record>& records, int digit) {
     }
     
     for (int i = n - 1; i >= 0; i--) {
-        int digitValue = (records[i].num / (long long)pow(10, digit)) % 10;
+        int digitValue = getDigit(records[i].num, digitPos);
         output[count[digitValue] - 1] = records[i];
         count[digitValue]--;
     }
     records = output;
 }
 
-// LSD radix sort: 10 digit passes
 void radixSort(vector<Record>& records) {
-    for (int digit = 0; digit < 10; digit++) {
-        countingSort(records, digit);
+    const int totalDigits = 10;
+    for (int digitPos = 0; digitPos < totalDigits; digitPos++) {
+        countingSortByDigit(records, digitPos);
     }
 }
 
@@ -52,17 +55,14 @@ string getOutputFilename(const string& inputFilename) {
     return "radix_sorted_" + inputFilename;
 }
 
-void processFile(const string& filename) {
+bool readDataset(const string& filename, vector<Record>& records) {
     ifstream inputFile(filename);
     if (!inputFile.is_open()) {
-        cerr << "Error: Could not open file " << filename << endl;
-        return;
+        return false;
     }
-    
-    vector<Record> records;
+
     string line;
-    
-    // parse CSV: integer,string
+
     while (getline(inputFile, line)) {
         size_t commaPos = line.find(',');
         if (commaPos != string::npos) {
@@ -71,32 +71,48 @@ void processFile(const string& filename) {
             records.push_back({num, str});
         }
     }
-    inputFile.close();
-    
-    // time sorting only, exclude I/O
-    auto start = chrono::high_resolution_clock::now();
-    radixSort(records);
-    auto end = chrono::high_resolution_clock::now();
-    
-    chrono::duration<double> elapsed = end - start;
-    
-    string outputFilename = getOutputFilename(filename);
+
+    return true;
+}
+
+bool writeSortedOutput(const string& outputFilename,
+                       const vector<Record>& records,
+                       const string& inputFilename,
+                       double elapsedSeconds) {
     ofstream outputFile(outputFilename);
     if (!outputFile.is_open()) {
-        cerr << "Error: Could not create output file " << outputFilename << endl;
-        return;
+        return false;
     }
-    
+
     for (const auto& record : records) {
         outputFile << record.num << "/" << record.str << endl;
     }
-    
-    outputFile << "Radix sort running time for " << filename << ": " 
-               << fixed << setprecision(6) << elapsed.count() << " seconds" << endl;
-    
-    outputFile.close();
-    
-    cout << "Radix sort running time for " << filename << ": " 
+
+    outputFile << "Radix sort running time for " << inputFilename << ": "
+               << fixed << setprecision(6) << elapsedSeconds << " seconds" << endl;
+    return true;
+}
+
+void processFile(const string& filename) {
+    vector<Record> records;
+    if (!readDataset(filename, records)) {
+        cerr << "Error: Could not open file " << filename << endl;
+        return;
+    }
+
+    auto start = chrono::high_resolution_clock::now();
+    radixSort(records);
+    auto end = chrono::high_resolution_clock::now();
+
+    chrono::duration<double> elapsed = end - start;
+
+    string outputFilename = getOutputFilename(filename);
+    if (!writeSortedOutput(outputFilename, records, filename, elapsed.count())) {
+        cerr << "Error: Could not create output file " << outputFilename << endl;
+        return;
+    }
+
+    cout << "Radix sort running time for " << filename << ": "
          << fixed << setprecision(6) << elapsed.count() << " seconds" << endl;
 }
 
