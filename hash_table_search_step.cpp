@@ -58,4 +58,48 @@ public:
         }
     }
 
-    
+    int hashFunction(long long key) const{
+        return (int)((unsigned long long)key% (unsigned long long)tableSize);   
+    }
+
+        void insert(const Record& rec) {
+        int   idx     = hashFunction(rec.key);
+        Node* newNode = new Node();
+        newNode->data = rec;
+        newNode->next = table[idx]; 
+        table[idx]    = newNode;    
+    }
+
+        bool searchWithSteps(long long targetKey, ofstream& out) const {
+        int idx = hashFunction(targetKey);
+ 
+        out << "Searching for target: " << targetKey << "\n";
+        out << "Hash bucket index   : " << idx << "\n";
+        out << "-------------------------------------------\n";
+ 
+        Node* curr        = table[idx];
+        int   compareCount = 0;
+ 
+        while (curr != nullptr) {
+            compareCount++;
+            out << "Comparison " << compareCount
+                << ": comparing with " << curr->data.key
+                << "/" << curr->data.value;
+ 
+            if (curr->data.key == targetKey) {
+                out << "  --> MATCH\n";
+                out << "-------------------------------------------\n";
+                out << targetKey << " = "
+                    << curr->data.key << "/" << curr->data.value << "\n";
+                return true;
+            } else {
+                out << "  (no match)\n";
+            }
+            curr = curr->next;
+        }
+        out << "-------------------------------------------\n";
+                out << "-1 != " << targetKey << "\n";
+        return false;
+    }
+};
+
