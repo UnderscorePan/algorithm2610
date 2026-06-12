@@ -103,3 +103,71 @@ public:
     }
 };
 
+vector<Record> parseCSV(const string& filename) {
+    vector<Record> records;
+    ifstream inFile(filename);
+
+     if (!inFile.is_open()) {
+        cerr << "Error opening file: " << filename << endl;
+        return records;     
+}
+
+string line;
+while (getline(inFile, line)) {
+    if (line.empty()) continue; 
+
+    if (!line.empty() && line.back() == '\r') {
+        line.pop_back();
+    }
+
+    stringstream ss(line);
+    string keyStr, valueStr;
+
+    if (getline(ss, keyStr, ',') && getline(ss, valueStr)) {
+        try {
+            Record rec;
+            rec.key   = stoll(keyStr);
+            rec.value = valueStr;
+            records.push_back(rec);
+        }catch (...){
+                cerr << "Error parsing line: " << line << endl;
+        
+        }
+        }
+    }
+    
+    inFile.close();
+    return records;
+}
+
+string extractDatasetSize(const string& filename) {
+    size_t underPos = filename.rfind('_');
+    size_t dotPos   = filename.rfind('.');
+    if (underPos != string::npos && dotPos != string::npos && underPos < dotPos) {
+        return filename.substr(underPos + 1, dotPos - underPos - 1);
+    }
+    return "unknown";
+}
+
+void runSearch(const HashTable& ht,
+               long long targetKey,
+               const string& datasetSizeStr) {
+    string outFilename = "dataset_" + datasetSizeStr
+                         + "_hash_table_search_step_"
+                       + to_string(target) + ".txt";
+    ofstream outFile(outFilename);  
+    if (!outFile.is_open()) {
+        cerr << "Error opening output file: " << outFilename << endl;
+        return;
+    }   
+
+    cout << "\n--- Searching for target: " << target << " ---\n";
+    bool found = ht.searchWithSteps(targetKey, outFile);
+    if (found) {
+        cout << "Result: FOUND (" << target << " = " << target << ")\n";
+    else {
+        cout << "Result: NOT FOUND (" << target << " != -1)\n";
+    }
+    outFile.close();       
+   
+}
