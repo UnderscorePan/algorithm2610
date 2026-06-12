@@ -15,3 +15,47 @@
 // Member_3: Jevaanraj
 // Member_4:
 // # *********************************************************
+
+/* Purpose:
+    Reads a dataset CSv, inserts all records into a hash table 
+    using separate chaining (linked list), then searches for 
+    a specified target key and logs every step of the search process 
+    to an output file */
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+using namespace std;
+
+
+struct Record {
+    long long key;  // 10-digit unique int
+    string value;   // 5-letter lowercase string
+};
+
+struct Node {
+    Record data;
+    Node* next;
+};
+
+class HashTable {
+private:
+    int tableSize;
+    vector<Node*> table;
+
+public:
+    HashTable(int size) : tableSize(size), table(size, nullptr) {}
+    ~HashTable() {
+        for (int i = 0; i < tableSize; ++i) {
+            Node* current = table[i];
+            while (current) {
+                Node* temp = current;
+                current = current->next;
+                delete temp;
+            }
+        }
+    }
+
+    
