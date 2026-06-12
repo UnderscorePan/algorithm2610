@@ -171,3 +171,40 @@ void runSearch(const HashTable& ht,
     outFile.close();       
    
 }
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        cerr << "Usage: " << argv[0] << " <dataset_filename.csv>\n";
+                cerr << "Example: " << argv[0] << " dataset_1000.csv\n";
+        return 1;
+    }
+ 
+    string datasetFile    = argv[1];
+    string datasetSizeStr = extractDatasetSize(datasetFile);
+
+    cout << "Reading dataset from: " << datasetFile << " ...\n";
+    vector<Record> records = parseCSV(datasetFile);
+ 
+    if (records.empty()) {
+        cerr << "ERROR: No records loaded. Check the file path and format.\n";
+        return 1;
+    }
+    cout << "Loaded " << records.size() << " records.\n";
+
+    cout << "Building hash table with " << tableSize << " buckets ...\n";
+    HashTable ht(tableSize);
+ 
+    for (const Record& rec : records) {
+        ht.insert(rec);
+    }
+    cout << "Hash table built successfully.\n";
+
+    runSearch(ht, TARGET_FOUND, datasetSizeStr);
+    runSearch(ht, TARGET_NOT_FOUND, datasetSizeStr);
+
+    cout << "\nDone.\n";
+    return 0;
+
+}
+
+
