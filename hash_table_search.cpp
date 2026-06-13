@@ -193,4 +193,116 @@
                     if (isPrime) return candidate;
                     candidate += 2; 
             }
-   }
+
+         int main(int argc, char* argv[]) {
+            if (argc < 2) {
+                cerr << "Usage: " << argv[0] << " <csv_file>" << endl;
+                return 1;
+            }
+
+            string filename = argv[1];
+            string datasetSize = extractDatasetSize(filename);
+            cout << "Dataset Size: " << datasetSize << endl;
+
+            return 1;
+        }
+
+        string datasetFile = argv[1];
+        string datasetSizeStr = extractDatasetSize(datasetFile);
+
+        cout << "Reading dataset from: " << datasetFile << endl;
+        vector<Record> records = parseCSV(datasetFile);
+
+        if (records.empty()) {
+            cerr << "No valid records found in the dataset." << endl;
+            return 1;
+        }
+
+        int n = (int)records.size();
+        cout << "Loaded " << n << " records." << endl;
+
+        int tableSize = choosePrimeTableSize(n * 2);
+        cout << "Building hash table with " << tableSize << " buckets..." << endl;
+
+        HashTable ht(tableSize);
+        for (const Record& rec : records) {
+            ht.insert(rec);
+        }
+
+        cout << "Hash table built with " << ht.getNumElements() << " elements." << endl;
+
+        long long bestCaseKey = ht.getBestCaseKey();
+        long long worstCaseKey = ht.getLongestChainKey();
+        vector<long long> allKeys = ht.getAllKeys();
+
+        cout << "Best case key: " << bestCaseKey << endl;
+        cout << "Worst case key: " << worstCaseKey << endl;
+        cout << "Average case key: " << allKeys[allKeys.size() / 2] << endl;
+
+        cout << "TIming best case (" << n << " searches)..." << endl;
+            auto bcStart = high_resolution_clock::now();
+ 
+    volatile int bestFound = 0; 
+    for (int i = 0; i < n; i++) {
+        Node* result = ht.search(bestCaseKey);
+        if (result != nullptr) bestFound++;
+    }
+ 
+    auto bcEnd = high_resolution_clock::now();
+    duration<double> bestTime = duration_cast<duration<double>>(bcEnd - bcStart);
+
+
+        cout << "Timing average case (" << n << " searches)..." << endl;
+        auto acStart = high_resolution_clock::now();
+
+    volatile int avgFound = 0;
+    for (int i = 0; i < n; i++) {
+        Node* result = ht.search(allKeys[i]);
+        if (result != nullptr) avgFound++;
+    }
+
+    auto acEnd = high_resolution_clock::now();
+    duration<double> avgTime = duration_cast<duration<double>>(acEnd - acStart);
+
+        cout << "Timing worst case (" << n << " searches)..." << endl;
+        auto wcStart = high_resolution_clock::now();
+
+    volatile int worstFound = 0;
+    for (int i = 0; i < n; i++) {
+        Node* result = ht.search(worstCaseKey);
+        if (result != nullptr) worstFound++;
+    }
+
+    auto wcEnd = high_resolution_clock::now();
+    duration<double> worstTime = duration_cast<duration<double>>(wcEnd - wcStart);
+
+        string outFilename = "hash_table_search_dataset_" + datasetSizeStr + ".txt";
+    ofstream outFile(outFilename);
+ 
+    if (!outFile.is_open()) {
+        cerr << "ERROR: Cannot create output file: " << outFilename << "\n";
+        return 1;
+    }
+
+        cout << "\nResults for dataset size " << datasetSizeStr << ":\n";
+        cout << "Best case: " << bestFound << "/" << n << " found, time = " << bestTime.count() << " seconds\n";
+        cout << "Average case: " << avgFound << "/" << n << " found, time = " << avgTime.count() << " seconds\n";
+        cout << "Worst case: " << worstFound << "/" << n << " found, time = " << worstTime.count() << " seconds\n";
+
+        outFile.close();
+
+            cout << "\n=========================================\n";
+            cout << "Results for dataset size n = " << n << "\n";
+            cout << "=========================================\n";
+            cout << "Best case time: "    << bestTime.count()  << " seconds\n";
+            cout << "Average case time: " << avgTime.count()   << " seconds\n";
+            cout << "Worst case time: "   << worstTime.count() << " seconds\n";
+            cout << "=========================================\n";
+            cout << "Output written to: " << outFilename << "\n";
+
+        return 0;
+    }
+
+
+        
+
