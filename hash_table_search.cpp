@@ -135,5 +135,62 @@
             return tableSize;
         };
 
-         
+        vector<Record> parseCSV(const string& filename) {
+            vector<Record> records;
+            ifstream inFile(filename);
+
+            if (!inFile.is_open()) {
+                cerr << "Error opening file: " << filename << endl;
+                return records;     
+            }
+
+            string line;
+            while (getline(inFile, line)) {
+                if (line.empty()) continue; 
+
+                if (!line.empty() && line.back() == '\r') {
+                    line.pop_back();
+                }
+
+                stringstream ss(line);
+                string keyStr, valueStr;
+
+                if (getline(ss, keyStr, ',') && getline(ss, valueStr)) {
+                    try {
+                        Record rec;
+                        rec.key   = stoll(keyStr);
+                        rec.value = valueStr;
+                        records.push_back(rec);
+                    }catch (...){
+                        cerr << "Error parsing line: " << line << endl;
+                    }
+                }
+            }
+    
+            inFile.close();
+            return records;
+
+            string extractDatasetSize(const string& filename) {
+                size_t underPos = filename.rfind('_');
+                size_t dotPos   = filename.rfind('.');
+                if (underPos != string::npos && dotPos != string::npos && underPos < dotPos) {
+                    return filename.substr(underPos + 1, dotPos - underPos - 1);
+                }
+                return "unknown";
+            }
+
+            int choosePrimeTableSize (int minSize) {
+                if (minSize < 2) return 2;
+                int candidate = (minSize % 2 == 0) ? minSize + 1 : minSize;
+                while (true) {
+                    bool isPrime = true;
+                    for (int i=2; (long long)i * i <= candidate; i++) {
+                        if (candidate % i == 0) {
+                            isPrime = false;
+                            break;
+                        }
+                    }
+                    if (isPrime) return candidate;
+                    candidate += 2; 
+            }
    }
