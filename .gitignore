@@ -8,3 +8,4 @@ radix_sorted_dataset_*.csv
 dataset_generator
 radix_sort
 radix_sort_step
+.vscode
