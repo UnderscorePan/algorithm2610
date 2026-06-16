@@ -29,6 +29,23 @@
 #include <string>
 using namespace std;
 
+static int choosePrimeTableSize(int minSize) {
+    if (minSize < 2) return 2;
+
+    int candidate = (minSize % 2 == 0) ? minSize + 1 : minSize;
+    while (true) {
+        bool isPrime = true;
+        for (int i = 2; (long long)i * i <= candidate; ++i) {
+            if (candidate % i == 0) {
+                isPrime = false;
+                break;
+            }
+        }
+        if (isPrime) return candidate;
+        candidate += 2;
+    }
+}
+
 
 struct Record {
     long long key;  // 10-digit unique int
@@ -154,19 +171,20 @@ void runSearch(const HashTable& ht,
                const string& datasetSizeStr) {
     string outFilename = "dataset_" + datasetSizeStr
                          + "_hash_table_search_step_"
-                       + to_string(target) + ".txt";
+                       + to_string(targetKey) + ".txt";
     ofstream outFile(outFilename);  
     if (!outFile.is_open()) {
         cerr << "Error opening output file: " << outFilename << endl;
         return;
     }   
 
-    cout << "\n--- Searching for target: " << target << " ---\n";
+    cout << "\n--- Searching for target: " << targetKey << " ---\n";
     bool found = ht.searchWithSteps(targetKey, outFile);
     if (found) {
-        cout << "Result: FOUND (" << target << " = " << target << ")\n";
+        cout << "Result: FOUND (" << targetKey << " = " << targetKey << ")\n";
+    }
     else {
-        cout << "Result: NOT FOUND (" << target << " != -1)\n";
+        cout << "Result: NOT FOUND (" << targetKey << " != -1)\n";
     }
     outFile.close();       
    
@@ -191,6 +209,7 @@ int main(int argc, char* argv[]) {
     }
     cout << "Loaded " << records.size() << " records.\n";
 
+    int tableSize = choosePrimeTableSize((int)records.size() * 2);
     cout << "Building hash table with " << tableSize << " buckets ...\n";
     HashTable ht(tableSize);
  
@@ -199,6 +218,9 @@ int main(int argc, char* argv[]) {
     }
     cout << "Hash table built successfully.\n";
 
+    long long TARGET_FOUND = records.front().key;
+    long long TARGET_NOT_FOUND = -1;
+
     runSearch(ht, TARGET_FOUND, datasetSizeStr);
     runSearch(ht, TARGET_NOT_FOUND, datasetSizeStr);
 
@@ -206,5 +228,4 @@ int main(int argc, char* argv[]) {
     return 0;
 
 }
-
 
