@@ -34,8 +34,13 @@
    using namespace chrono;
 
    struct Record {
-    Record data;
-    Node* next;
+       long long key;
+       string value;
+   };
+
+   struct Node {
+       Record data;
+       Node* next;
    };
 
    class HashTable {
@@ -45,7 +50,7 @@
         vector<Node*> table;
     public:
         HashTable(int size)
-            :tableSize(size). numElements(0), table(size, nullptr) {}
+            :tableSize(size), numElements(0), table(size, nullptr) {}
 
         ~HashTable(){
             for (int i=0; i < tableSize; i++) {
@@ -82,7 +87,7 @@
             return nullptr; 
         }
 
-        long long getBestCaseKey() cosnt {
+        long long getBestCaseKey() const {
             for (int i = 0; i < tableSize; ++i) {
                 if (table[i] != nullptr) {
                     return table[i]->data.key; 
@@ -96,7 +101,7 @@
             long long worstKey = LLONG_MIN;
 
             for (int i = 0; i < tableSize; i++){
-                if (table[i]) == nullptr) continue;
+                if (table[i] == nullptr) continue;
 
                 int len = 0;
                 Node* curr = table[i];
@@ -131,55 +136,59 @@
 
         int getNumElements() const {
             return numElements;
+        }
+
         int getTableSize() const {
             return tableSize;
-        };
+        }
+   };
 
-        vector<Record> parseCSV(const string& filename) {
-            vector<Record> records;
-            ifstream inFile(filename);
+   vector<Record> parseCSV(const string& filename) {
+       vector<Record> records;
+       ifstream inFile(filename);
 
-            if (!inFile.is_open()) {
-                cerr << "Error opening file: " << filename << endl;
-                return records;     
-            }
+       if (!inFile.is_open()) {
+           cerr << "Error opening file: " << filename << endl;
+           return records;     
+       }
 
-            string line;
-            while (getline(inFile, line)) {
-                if (line.empty()) continue; 
+       string line;
+       while (getline(inFile, line)) {
+           if (line.empty()) continue; 
 
-                if (!line.empty() && line.back() == '\r') {
-                    line.pop_back();
-                }
+           if (!line.empty() && line.back() == '\r') {
+               line.pop_back();
+           }
 
-                stringstream ss(line);
-                string keyStr, valueStr;
+           stringstream ss(line);
+           string keyStr, valueStr;
 
-                if (getline(ss, keyStr, ',') && getline(ss, valueStr)) {
-                    try {
-                        Record rec;
-                        rec.key   = stoll(keyStr);
-                        rec.value = valueStr;
-                        records.push_back(rec);
-                    }catch (...){
-                        cerr << "Error parsing line: " << line << endl;
-                    }
-                }
-            }
-    
-            inFile.close();
-            return records;
+           if (getline(ss, keyStr, ',') && getline(ss, valueStr)) {
+               try {
+                   Record rec;
+                   rec.key   = stoll(keyStr);
+                   rec.value = valueStr;
+                   records.push_back(rec);
+               }catch (...){
+                   cerr << "Error parsing line: " << line << endl;
+               }
+           }
+       }
 
-            string extractDatasetSize(const string& filename) {
+       inFile.close();
+       return records;
+   }
+
+   string extractDatasetSize(const string& filename) {
                 size_t underPos = filename.rfind('_');
                 size_t dotPos   = filename.rfind('.');
                 if (underPos != string::npos && dotPos != string::npos && underPos < dotPos) {
                     return filename.substr(underPos + 1, dotPos - underPos - 1);
                 }
                 return "unknown";
-            }
+   }
 
-            int choosePrimeTableSize (int minSize) {
+   int choosePrimeTableSize (int minSize) {
                 if (minSize < 2) return 2;
                 int candidate = (minSize % 2 == 0) ? minSize + 1 : minSize;
                 while (true) {
@@ -191,23 +200,18 @@
                         }
                     }
                     if (isPrime) return candidate;
-                    candidate += 2; 
-            }
+                    candidate += 2;
+                }
+                return -1;
+   }
 
-         int main(int argc, char* argv[]) {
-            if (argc < 2) {
-                cerr << "Usage: " << argv[0] << " <csv_file>" << endl;
-                return 1;
-            }
+   int main(int argc, char* argv[]) {
+           if (argc < 2) {
+           cerr << "Usage: " << argv[0] << " <csv_file>" << endl;
+           return 1;
+       }
 
-            string filename = argv[1];
-            string datasetSize = extractDatasetSize(filename);
-            cout << "Dataset Size: " << datasetSize << endl;
-
-            return 1;
-        }
-
-        string datasetFile = argv[1];
+       string datasetFile = argv[1];
         string datasetSizeStr = extractDatasetSize(datasetFile);
 
         cout << "Reading dataset from: " << datasetFile << endl;
@@ -300,9 +304,5 @@
             cout << "=========================================\n";
             cout << "Output written to: " << outFilename << "\n";
 
-        return 0;
-    }
-
-
-        
-
+       return 0;
+   }
