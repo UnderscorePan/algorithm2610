@@ -288,21 +288,23 @@
         return 1;
     }
 
-        cout << "\nResults for dataset size " << datasetSizeStr << ":\n";
-        cout << "Best case: " << bestFound << "/" << n << " found, time = " << bestTime.count() << " seconds\n";
-        cout << "Average case: " << avgFound << "/" << n << " found, time = " << avgTime.count() << " seconds\n";
-        cout << "Worst case: " << worstFound << "/" << n << " found, time = " << worstTime.count() << " seconds\n";
+        outFile << "\nResults for dataset size " << datasetSizeStr << ":\n";
+        outFile << "Best case: " << bestFound << "/" << n << " found, time = " << bestTime.count() << " seconds\n";
+        outFile << "Average case: " << avgFound << "/" << n << " found, time = " << avgTime.count() << " seconds\n";
+        outFile << "Worst case: " << worstFound << "/" << n << " found, time = " << worstTime.count() << " seconds\n";
+
+        outFile << "\n=========================================\n";
+        outFile << "Results for dataset size n = " << n << "\n";
+        outFile << "=========================================\n";
+        outFile << "Best case time: "    << bestTime.count()  << " seconds\n";
+        outFile << "Average case time: " << avgTime.count()   << " seconds\n";
+        outFile << "Worst case time: "   << worstTime.count() << " seconds\n";
+        outFile << "=========================================\n";
+        outFile << "Output written to: " << outFilename << "\n";
 
         outFile.close();
 
-            cout << "\n=========================================\n";
-            cout << "Results for dataset size n = " << n << "\n";
-            cout << "=========================================\n";
-            cout << "Best case time: "    << bestTime.count()  << " seconds\n";
-            cout << "Average case time: " << avgTime.count()   << " seconds\n";
-            cout << "Worst case time: "   << worstTime.count() << " seconds\n";
-            cout << "=========================================\n";
-            cout << "Output written to: " << outFilename << "\n";
+        cout << "Results written to file: " << outFilename << "\n";
 
        return 0;
    }
