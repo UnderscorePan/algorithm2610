@@ -195,37 +195,40 @@ int main(int argc, char* argv[]) {
     string datasetFile    = argv[1];
     string datasetSizeStr = extractDatasetSize(datasetFile);
     string reportFilename = makeReportFilename(datasetSizeStr);
-    ofstream reportFile(reportFilename);
+    ofstream outFile(reportFilename);
 
-    if (!reportFile.is_open()) {
+    if (!outFile.is_open()) {
         return 1;
     }
 
-    reportFile << "Reading dataset from: " << datasetFile << " ...\n";
-    vector<Record> records = parseCSV(datasetFile, &reportFile);
+    outFile << "Reading dataset from: " << datasetFile << " ...\n";
+    cout << "Reading dataset from: " << datasetFile << endl;
+    vector<Record> records = parseCSV(datasetFile, &outFile);
  
     if (records.empty()) {
-        reportFile << "ERROR: No records loaded. Check the file path and format.\n";
+        outFile << "ERROR: No records loaded. Check the file path and format.\n";
         return 1;
     }
-    reportFile << "Loaded " << records.size() << " records.\n";
+    outFile << "Loaded " << records.size() << " records.\n";
 
     int tableSize = choosePrimeTableSize((int)records.size() * 2);
-    reportFile << "Building hash table with " << tableSize << " buckets ...\n";
+    outFile << "Building hash table with " << tableSize << " buckets ...\n";
     HashTable ht(tableSize);
  
     for (const Record& rec : records) {
         ht.insert(rec);
     }
-    reportFile << "Hash table built successfully.\n";
+    outFile << "Hash table built successfully.\n";
 
     long long TARGET_FOUND = records.front().key;
     long long TARGET_NOT_FOUND = -1;
 
-    runSearch(ht, TARGET_FOUND, reportFile);
-    runSearch(ht, TARGET_NOT_FOUND, reportFile);
+    runSearch(ht, TARGET_FOUND, outFile);
+    runSearch(ht, TARGET_NOT_FOUND, outFile);
 
-    reportFile << "\nDone.\n";
+    outFile << "\nDone.\n";
+    cout << "Results written to file: " << reportFilename << "\n";
+
     return 0;
 
 }

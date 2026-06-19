@@ -223,27 +223,27 @@
         }
 
         int n = (int)records.size();
-        cout << "Loaded " << n << " records." << endl;
+       // cout << "Loaded " << n << " records." << endl;
 
         int tableSize = choosePrimeTableSize(n * 2);
-        cout << "Building hash table with " << tableSize << " buckets..." << endl;
+      //  cout << "Building hash table with " << tableSize << " buckets..." << endl;
 
         HashTable ht(tableSize);
         for (const Record& rec : records) {
             ht.insert(rec);
         }
 
-        cout << "Hash table built with " << ht.getNumElements() << " elements." << endl;
+       // cout << "Hash table built with " << ht.getNumElements() << " elements." << endl;
 
         long long bestCaseKey = ht.getBestCaseKey();
         long long worstCaseKey = ht.getLongestChainKey();
         vector<long long> allKeys = ht.getAllKeys();
 
-        cout << "Best case key: " << bestCaseKey << endl;
-        cout << "Worst case key: " << worstCaseKey << endl;
-        cout << "Average case key: " << allKeys[allKeys.size() / 2] << endl;
+       // cout << "Best case key: " << bestCaseKey << endl;
+        //cout << "Worst case key: " << worstCaseKey << endl;
+       // cout << "Average case key: " << allKeys[allKeys.size() / 2] << endl;
 
-        cout << "TIming best case (" << n << " searches)..." << endl;
+        // cout << "TIming best case (" << n << " searches)..." << endl;
             auto bcStart = high_resolution_clock::now();
  
     volatile int bestFound = 0; 
@@ -253,10 +253,10 @@
     }
  
     auto bcEnd = high_resolution_clock::now();
-    duration<double> bestTime = duration_cast<duration<double>>(bcEnd - bcStart);
+    duration<double, std::milli> bestTime = duration_cast<duration<double, std::milli>>(bcEnd - bcStart);
 
 
-        cout << "Timing average case (" << n << " searches)..." << endl;
+       // cout << "Timing average case (" << n << " searches)..." << endl;
         auto acStart = high_resolution_clock::now();
 
     volatile int avgFound = 0;
@@ -266,9 +266,9 @@
     }
 
     auto acEnd = high_resolution_clock::now();
-    duration<double> avgTime = duration_cast<duration<double>>(acEnd - acStart);
+    duration<double, std::milli> avgTime = duration_cast<duration<double, std::milli>>(acEnd - acStart);
 
-        cout << "Timing worst case (" << n << " searches)..." << endl;
+       // cout << "Timing worst case (" << n << " searches)..." << endl;
         auto wcStart = high_resolution_clock::now();
 
     volatile int worstFound = 0;
@@ -278,7 +278,7 @@
     }
 
     auto wcEnd = high_resolution_clock::now();
-    duration<double> worstTime = duration_cast<duration<double>>(wcEnd - wcStart);
+    duration<double, std::milli> worstTime = duration_cast<duration<double, std::milli>>(wcEnd - wcStart);
 
         string outFilename = "hash_table_search_dataset_" + datasetSizeStr + ".txt";
     ofstream outFile(outFilename);
@@ -289,17 +289,19 @@
     }
 
         outFile << "\nResults for dataset size " << datasetSizeStr << ":\n";
-        outFile << "Best case: " << bestFound << "/" << n << " found, time = " << bestTime.count() << " seconds\n";
-        outFile << "Average case: " << avgFound << "/" << n << " found, time = " << avgTime.count() << " seconds\n";
-        outFile << "Worst case: " << worstFound << "/" << n << " found, time = " << worstTime.count() << " seconds\n";
-
-        outFile << "\n=========================================\n";
+        outFile << "Best case: " << bestFound << "/" << n << " found\n Time = " << bestTime.count() << " milliseconds\n";
+        outFile << endl;
+        outFile << "Average case: " << avgFound << "/" << n << " found\n Time = " << avgTime.count() << " milliseconds\n";
+        outFile << endl;
+        outFile << "Worst case: " << worstFound << "/" << n << " found\n Time = " << worstTime.count() << " milliseconds\n";
+        outFile << endl;
+        outFile << "=======================================================\n";
+        outFile << endl;
         outFile << "Results for dataset size n = " << n << "\n";
-        outFile << "=========================================\n";
-        outFile << "Best case time: "    << bestTime.count()  << " seconds\n";
-        outFile << "Average case time: " << avgTime.count()   << " seconds\n";
-        outFile << "Worst case time: "   << worstTime.count() << " seconds\n";
-        outFile << "=========================================\n";
+        outFile << "Best case time: "    << bestTime.count()  << " milliseconds\n";
+        outFile << "Average case time: " << avgTime.count()   << " milliseconds\n";
+        outFile << "Worst case time: "   << worstTime.count() << " milliseconds\n";
+        outFile << endl;
         outFile << "Output written to: " << outFilename << "\n";
 
         outFile.close();
