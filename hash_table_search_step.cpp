@@ -57,6 +57,10 @@ struct Node {
     Node* next;
 };
 
+static string makeReportFilename(const string& datasetSizeStr) {
+    return "dataset_" + datasetSizeStr + "_hash_table_search_step.txt";
+}
+
 class HashTable {
 private:
     int tableSize;
@@ -120,12 +124,14 @@ public:
     }
 };
 
-vector<Record> parseCSV(const string& filename) {
+vector<Record> parseCSV(const string& filename, ostream* report = nullptr) {
     vector<Record> records;
     ifstream inFile(filename);
 
      if (!inFile.is_open()) {
-        cerr << "Error opening file: " << filename << endl;
+        if (report) {
+            *report << "Error opening file: " << filename << "\n";
+        }
         return records;     
 }
 
@@ -147,7 +153,9 @@ while (getline(inFile, line)) {
             rec.value = valueStr;
             records.push_back(rec);
         }catch (...){
-                cerr << "Error parsing line: " << line << endl;
+                if (report) {
+                    *report << "Error parsing line: " << line << "\n";
+                }
         
         }
         }
@@ -168,63 +176,56 @@ string extractDatasetSize(const string& filename) {
 
 void runSearch(const HashTable& ht,
                long long targetKey,
-               const string& datasetSizeStr) {
-    string outFilename = "dataset_" + datasetSizeStr
-                         + "_hash_table_search_step_"
-                       + to_string(targetKey) + ".txt";
-    ofstream outFile(outFilename);  
-    if (!outFile.is_open()) {
-        cerr << "Error opening output file: " << outFilename << endl;
-        return;
-    }   
-
-    cout << "\n--- Searching for target: " << targetKey << " ---\n";
+               ofstream& outFile) {
+    outFile << "\n--- Searching for target: " << targetKey << " ---\n";
     bool found = ht.searchWithSteps(targetKey, outFile);
     if (found) {
-        cout << "Result: FOUND (" << targetKey << " = " << targetKey << ")\n";
+        outFile << "Result: FOUND (" << targetKey << " = " << targetKey << ")\n";
     }
     else {
-        cout << "Result: NOT FOUND (" << targetKey << " != -1)\n";
+        outFile << "Result: NOT FOUND (" << targetKey << " != -1)\n";
     }
-    outFile.close();       
-   
 }
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        cerr << "Usage: " << argv[0] << " <dataset_filename.csv>\n";
-                cerr << "Example: " << argv[0] << " dataset_1000.csv\n";
         return 1;
     }
  
     string datasetFile    = argv[1];
     string datasetSizeStr = extractDatasetSize(datasetFile);
+    string reportFilename = makeReportFilename(datasetSizeStr);
+    ofstream reportFile(reportFilename);
 
-    cout << "Reading dataset from: " << datasetFile << " ...\n";
-    vector<Record> records = parseCSV(datasetFile);
- 
-    if (records.empty()) {
-        cerr << "ERROR: No records loaded. Check the file path and format.\n";
+    if (!reportFile.is_open()) {
         return 1;
     }
-    cout << "Loaded " << records.size() << " records.\n";
+
+    reportFile << "Reading dataset from: " << datasetFile << " ...\n";
+    vector<Record> records = parseCSV(datasetFile, &reportFile);
+ 
+    if (records.empty()) {
+        reportFile << "ERROR: No records loaded. Check the file path and format.\n";
+        return 1;
+    }
+    reportFile << "Loaded " << records.size() << " records.\n";
 
     int tableSize = choosePrimeTableSize((int)records.size() * 2);
-    cout << "Building hash table with " << tableSize << " buckets ...\n";
+    reportFile << "Building hash table with " << tableSize << " buckets ...\n";
     HashTable ht(tableSize);
  
     for (const Record& rec : records) {
         ht.insert(rec);
     }
-    cout << "Hash table built successfully.\n";
+    reportFile << "Hash table built successfully.\n";
 
     long long TARGET_FOUND = records.front().key;
     long long TARGET_NOT_FOUND = -1;
 
-    runSearch(ht, TARGET_FOUND, datasetSizeStr);
-    runSearch(ht, TARGET_NOT_FOUND, datasetSizeStr);
+    runSearch(ht, TARGET_FOUND, reportFile);
+    runSearch(ht, TARGET_NOT_FOUND, reportFile);
 
-    cout << "\nDone.\n";
+    reportFile << "\nDone.\n";
     return 0;
 
 }
