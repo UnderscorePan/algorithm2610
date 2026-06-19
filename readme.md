@@ -4,6 +4,8 @@
 g++ -o dataset_generator dataset_generator.cpp
 g++ -o radix_sort radix_sort.cpp -lm
 g++ -o radix_sort_step radix_sort_step.cpp -lm
+g++ hash_table_search_step.cpp -o hash_table_search_step
+g++ hash_table_search.cpp -o hash_table_search
 ```
 
 ## Generate test data
@@ -31,3 +33,16 @@ Performs LSD radix sort on each file, outputs `radix_sorted_dataset_*.csv` with 
 ```
 
 Outputs step-by-step trace of radix sort on rows 1-7. Generates `dataset_1000_radix_sorted_step_1_7.txt` showing array state after each digit pass (d=10 to d=1).
+
+
+## Hash Table Search Step
+
+```sh
+./hash_table_search_step dataset_1000.csv 
+```
+
+## Hash Table Search 
+
+```sh
+./hash_table_search dataset_1000.csv 
+```
