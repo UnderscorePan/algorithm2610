@@ -25,18 +25,21 @@
 using namespace std;
 
 // student ID 251UC250HB
+// random engine seeded with student-specific value
 mt19937_64 gen(2511325082ULL);
 
-// 1 billion to 10 billion
+// 1 billion to 10 billion (inclusive) for generated ids
 uniform_int_distribution<long long> int_dist(1000000000LL, 9999999999LL);
 
-//single digits letters a-z
+// single-letter generator (a-z) used to build 5-char strings
 uniform_int_distribution<int> char_dist(0, 25);
  
+// return one random 10-digit integer
 long long generateRandomInteger() {
     return int_dist(gen);
 }
 
+// return a random 5-character lowercase string
 string generateRandomString() {
     string str(5, ' ');
     for (int i = 0; i < 5; i++) {
@@ -45,6 +48,7 @@ string generateRandomString() {
     return str;
 }
 
+// write n unique records to dataset_n.csv
 void generateDataset(int n) {
     unordered_set<long long> used;
     used.reserve(n);
@@ -58,25 +62,23 @@ void generateDataset(int n) {
         return;
     }
     
+    // keep generating until we have n unique integers
     while ((int)used.size() < n) {
         long long num = generateRandomInteger();
-        
-        if (!used.insert(num).second) continue;
-        
+        if (!used.insert(num).second) continue; // skip duplicates
         output_file << num << "," << generateRandomString() << endl;
     }
     
     cout << "Generated " << n << " records -> " << output_filename << endl;
 }
 
-int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        cout << "Usage: dataset_generator <size>" << endl;
-        return 1;
-    }
-    
-    int n = stoi(argv[1]);
+int main() {
+    // pick a size, edit/comment lines to try different sizes
+    // int n = 100;     // small quick test
+    int n = 1000;    // default
+    // int n = 10000;  // larger
+    // int n = 100000; // heavy
+
     generateDataset(n);
-    
     return 0;
 }

@@ -26,30 +26,32 @@
 
 using namespace std;
 
-// record: integer (1B-10B) and 5-char string
+// simple record: a 10-digit integer and its 5-char label
 struct Record {
     long long num;
     string str;
 };
 
+// return the digit at position digitPos (0 = rightmost)
 int getDigit(long long num, int digitPos) {
     return (num / (long long)pow(10, digitPos)) % 10;
 }
 
+// stable counting sort on a single digit (used by LSD radix)
 void countingSortByDigit(vector<Record>& records, int digitPos) {
     int n = (int)records.size();
     vector<Record> output(n);
     vector<int> count(10, 0);
-    
+
     for (int i = 0; i < n; i++) {
         int digitValue = getDigit(records[i].num, digitPos);
         count[digitValue]++;
     }
-    
-    for (int i = 1; i < 10; i++) {
-        count[i] += count[i - 1];
-    }
-    
+
+    // cumulative counts
+    for (int i = 1; i < 10; i++) count[i] += count[i - 1];
+
+    // place items into output array in stable order
     for (int i = n - 1; i >= 0; i--) {
         int digitValue = getDigit(records[i].num, digitPos);
         output[count[digitValue] - 1] = records[i];
@@ -58,11 +60,10 @@ void countingSortByDigit(vector<Record>& records, int digitPos) {
     records = output;
 }
 
+// perform LSD radix sort (10 passes, right-to-left)
 void radixSort(vector<Record>& records) {
     const int totalDigits = 10;
-    for (int digitPos = 0; digitPos < totalDigits; digitPos++) {
-        countingSortByDigit(records, digitPos);
-    }
+    for (int digitPos = 0; digitPos < totalDigits; digitPos++) countingSortByDigit(records, digitPos);
 }
 
 string getOutputFilename(const string& inputFilename) {
@@ -73,14 +74,12 @@ string getOutputFilename(const string& inputFilename) {
     return "radix_sorted_" + inputFilename;
 }
 
+// read entire CSV into memory (simple parser, no header expected)
 bool readDataset(const string& filename, vector<Record>& records) {
     ifstream inputFile(filename);
-    if (!inputFile.is_open()) {
-        return false;
-    }
+    if (!inputFile.is_open()) return false;
 
     string line;
-
     while (getline(inputFile, line)) {
         size_t commaPos = line.find(',');
         if (commaPos != string::npos) {
@@ -89,28 +88,24 @@ bool readDataset(const string& filename, vector<Record>& records) {
             records.push_back({num, str});
         }
     }
-
     return true;
 }
 
+// write sorted records and append timing info
 bool writeSortedOutput(const string& outputFilename,
                        const vector<Record>& records,
                        const string& inputFilename,
                        double elapsedSeconds) {
     ofstream outputFile(outputFilename);
-    if (!outputFile.is_open()) {
-        return false;
-    }
+    if (!outputFile.is_open()) return false;
 
-    for (const auto& record : records) {
-        outputFile << record.num << "/" << record.str << endl;
-    }
-
+    for (const auto& record : records) outputFile << record.num << "/" << record.str << endl;
     outputFile << "Radix sort running time for " << inputFilename << ": "
                << fixed << setprecision(6) << elapsedSeconds << " seconds" << endl;
     return true;
 }
 
+// read -> sort (timed) -> write
 void processFile(const string& filename) {
     vector<Record> records;
     if (!readDataset(filename, records)) {
@@ -123,8 +118,8 @@ void processFile(const string& filename) {
     auto end = chrono::high_resolution_clock::now();
 
     chrono::duration<double> elapsed = end - start;
-
     string outputFilename = getOutputFilename(filename);
+
     if (!writeSortedOutput(outputFilename, records, filename, elapsed.count())) {
         cerr << "Error: Could not create output file " << outputFilename << endl;
         return;
@@ -134,16 +129,12 @@ void processFile(const string& filename) {
          << fixed << setprecision(6) << elapsed.count() << " seconds" << endl;
 }
 
-int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        cerr << "Usage: " << argv[0] << " <dataset_file1.csv> [dataset_file2.csv] ..." << endl;
-        return 1;
-    }
-    
-    // process each input file
-    for (int i = 1; i < argc; i++) {
-        processFile(argv[i]);
-    }
-    
+int main() {
+    // choose input files by commenting/uncommenting the options below
+    // vector<string> inputs = {"dataset_1000.csv"};
+    vector<string> inputs = {"dataset_1000.csv", "dataset_10000.csv"}; // default
+    // vector<string> inputs = {"dataset_100000.csv"};
+
+    for (const auto& f : inputs) processFile(f);
     return 0;
 }

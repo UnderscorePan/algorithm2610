@@ -30,6 +30,7 @@ struct Record {
     string str;
 };
 
+// format records into the required bracketed text for the trace
 string formatRecords(const vector<Record>& records) {
     stringstream ss;
     ss << "[";
@@ -41,30 +42,30 @@ string formatRecords(const vector<Record>& records) {
     return ss.str();
 }
 
+// helper: get digit at position (0 = rightmost)
 int getDigit(long long num, int digitPos) {
     return (num / (long long)pow(10, digitPos)) % 10;
 }
 
+// stable counting sort used for each pass of LSD radix
 void countingSortByDigit(vector<Record>& records, int digitPos) {
     int n = (int)records.size();
     vector<Record> output(n);
     vector<int> count(10, 0);
-    
+
     for (int i = 0; i < n; i++) {
         int digitValue = getDigit(records[i].num, digitPos);
         count[digitValue]++;
     }
-    
-    for (int i = 1; i < 10; i++) {
-        count[i] += count[i - 1];
-    }
-    
+
+    for (int i = 1; i < 10; i++) count[i] += count[i - 1];
+
     for (int i = n - 1; i >= 0; i--) {
         int digitValue = getDigit(records[i].num, digitPos);
         output[count[digitValue] - 1] = records[i];
         count[digitValue]--;
     }
-    
+
     records = output;
 }
 
@@ -80,6 +81,7 @@ int getDatasetSize(const string& filename) {
     return 0;
 }
 
+// read only rows startRow..endRow (1-indexed) into records
 bool readRowRange(const string& filename, int startRow, int endRow, vector<Record>& records) {
     ifstream inputFile(filename);
     if (!inputFile.is_open()) {
@@ -114,15 +116,12 @@ string getStepOutputFilename(const string& inputFilename, int startRow, int endR
     return outputSS.str();
 }
 
-int main(int argc, char* argv[]) {
-    if (argc != 4) {
-        cerr << "Usage: " << argv[0] << " <dataset_file.csv> <start_row> <end_row>" << endl;
-        return 1;
-    }
-    
-    string filename = argv[1];
-    int startRow = stoi(argv[2]);
-    int endRow = stoi(argv[3]);
+int main() {
+    // choose one input set by uncommenting the line you want
+    // string filename = "dataset_1000.csv"; int startRow = 1;  int endRow = 7;
+    string filename = "dataset_1000.csv"; int startRow = 1;  int endRow = 7; // default
+    // string filename = "dataset_10000.csv"; int startRow = 10; int endRow = 20;
+    // string filename = "dataset_100000.csv"; int startRow = 100; int endRow = 110;
 
     vector<Record> records;
     if (!readRowRange(filename, startRow, endRow, records)) {
