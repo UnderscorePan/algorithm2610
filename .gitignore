@@ -6,5 +6,5 @@ radix_sorted_dataset_*.csv
 *.exe
 *.out
 dataset_generator
-radix_sort
-radix_sort_step
+/radix_sort
+/radix_sort_step
