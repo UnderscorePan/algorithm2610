@@ -38,11 +38,11 @@ Outputs step-by-step trace of radix sort on rows 1-7. Generates `dataset_1000_ra
 ## Hash Table Search Step
 
 ```sh
-./hash_table_search_step dataset_1000.csv 
+./hash_table_search_step 
 ```
 
 ## Hash Table Search 
 
 ```sh
-./hash_table_search dataset_1000.csv 
+./hash_table_search 
 ```
