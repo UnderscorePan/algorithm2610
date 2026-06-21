@@ -205,15 +205,19 @@
                 return -1;
    }
 
-   int main(int argc, char* argv[]) {
-           if (argc < 2) {
-           cerr << "Usage: " << argv[0] << " <csv_file>" << endl;
-           return 1;
-       }
+   int main() {
+    // Comment/uncomment lines to choose which datasets to run.
+    // Multiple uncommented lines will run one after another.
+   
+    vector<string> inputs = { 
+        "dataset_1000.csv",
+        // "dataset_10000.csv",
+        //"dataset_100000.csv",
+    };
+    
 
-       string datasetFile = argv[1];
-        string datasetSizeStr = extractDatasetSize(datasetFile);
-
+    for (const string& datasetFile : inputs) {
+    string datasetSizeStr = extractDatasetSize(datasetFile);
         cout << "Reading dataset from: " << datasetFile << endl;
         vector<Record> records = parseCSV(datasetFile);
 
@@ -310,3 +314,4 @@
 
        return 0;
    }
+}

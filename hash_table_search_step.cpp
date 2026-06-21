@@ -187,12 +187,13 @@ void runSearch(const HashTable& ht,
     }
 }
 
-int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        return 1;
-    }
- 
-    string datasetFile    = argv[1];
+int main() {
+    // Comment/uncomment lines to choose which datasets to run.
+    // Multiple uncommented lines will run one after another.
+   
+    string datasetFile = "dataset_1000.csv";   
+    //string datasetFile = "dataset_10000.csv";
+    //string datasetFile = "dataset_100000.csv";
     string datasetSizeStr = extractDatasetSize(datasetFile);
     string reportFilename = makeReportFilename(datasetSizeStr);
     ofstream outFile(reportFilename);
