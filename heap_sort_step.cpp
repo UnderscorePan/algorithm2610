@@ -135,13 +135,13 @@ int main(int argc, char* argv[]) {
     for (int i = n / 2 - 1; i >= 0; i--) {
         maxHeapify(records, n, i);
     }
-    outputFile << formatRecords(records) << " initial" << endl;// [cite: 119]
+    outputFile << formatRecords(records) << " initial" << endl;
 
     // 2. Extract elements one by one and track steps
     for (int i = n - 1; i > 0; i--) {
         swap(records[0], records[i]);
         maxHeapify(records, i, 0);
-        outputFile << formatRecords(records) << " i=" << i << endl; //[cite: 120]
+        outputFile << formatRecords(records) << " i=" << i << endl; 
     }
     
     outputFile.close();
