@@ -6,32 +6,31 @@
 // Trimester: 2610
 // Member_1: Hew Wee Bo | hewweebo@gmail.com | 0128803121
 // Member_2: ID | NAME | EMAIL | PHONE
-// Member_3: ID | JEVAANRAJ A/L RAJA KUMARAN | jevaanraj17@gmail.com | 0179651973
+// Member_3: ID | NAME | EMAIL | PHONE
 // Member_4: ID | NAME | EMAIL | PHONE
 // # *********************************************************
 // Task Distribution
 // Member_1: Hew Wee Bo
 // Member_2:
-// Member_3: Jevaanraj
+// Member_3:
 // Member_4:
 // # *********************************************************
 
 #include <iostream>
- #include <fstream>
- #include <vector>
- #include <sstream>
- #include <string>
- #include <chrono>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <chrono>
+#include <iomanip>
 
 using namespace std;
-using namespace std::chrono;
 
 struct Record {
     long long num;
     string str;
 };
 
- void maxHeapify(vector<Record>& records, int n, int i) {
+void maxHeapify(vector<Record>& records, int n, int i) {
     int largest = i;
     int left = 2 * i + 1;
     int right = 2 * i + 2;
@@ -43,49 +42,44 @@ struct Record {
         largest = right;
 
     if (largest != i) {
-        swap(records[i], records[largest]);
+        Record temp = records[i];
+        records[i] = records[largest];
+        records[largest] = temp;
+
         maxHeapify(records, n, largest);
     }
 }
 
-// Full heap sort algorithm execution
+// complete heap sort algorithm implementation
 void heapSort(vector<Record>& records) {
     int n = (int)records.size();
+
+    // 1. build max heap
     for (int i = n / 2 - 1; i >= 0; i--) {
         maxHeapify(records, n, i);
     }
+
+    // 2. heap sort
     for (int i = n - 1; i > 0; i--) {
-        swap(records[0], records[i]);
+        Record temp = records[0];
+        records[0] = records[i];
+        records[i] = temp;
+
         maxHeapify(records, i, 0);
     }
 }
 
-int getDatasetSize(const string& filename) {
-    size_t pos = filename.find("dataset_");
+string getOutputFilename(const string& inputFilename) {
+    size_t pos = inputFilename.find("dataset_");
     if (pos != string::npos) {
-        size_t endPos = filename.find(".csv", pos);
-        if (endPos != string::npos) {
-            return stoi(filename.substr(pos + 8, endPos - (pos + 8)));
-        }
+        return "heap_sort_" + inputFilename.substr(pos);
     }
-    return 0;
+    return "heap_sort_" + inputFilename;
 }
 
-int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        cerr << "Usage: " << argv[0] << " <dataset_file.csv>" << endl;
-        return 1;
-    }
-    
-    string filename = argv[1];
-    vector<Record> records;
-
-    // Open file and read all rows
+bool readDataset(const string& filename, vector<Record>& records) {
     ifstream inputFile(filename);
-    if (!inputFile.is_open()) {
-        cerr << "Error reading dataset file." << endl;
-        return 1;
-    }
+    if (!inputFile.is_open()) return false;
 
     string line;
     while (getline(inputFile, line)) {
@@ -96,34 +90,53 @@ int main(int argc, char* argv[]) {
             records.push_back({num, str});
         }
     }
-    inputFile.close();
+    return true;
+}
 
-    // --- TIMING STARTS HERE (Excludes all I/O processing) --- [cite: 27]
-    auto start = high_resolution_clock::now();
-    heapSort(records);
-    auto stop = high_resolution_clock::now();
-    // --- TIMING ENDS HERE ---
-
-    auto duration = duration_cast<microseconds>(stop - start);
-    double seconds = duration.count() / 1000000.0;
-
-    // Print running time directly to console for quick command prompt screenshots 
-    cout << "--------------------------------------" << endl;
-    cout << "Dataset Size: " << records.size() << endl;
-    cout << "Heap Sort execution time: " << seconds << " seconds" << endl;
-    cout << "--------------------------------------" << endl;
-
-    // Generate heap_sort_dataset_n.csv output data 
-    int datasetSize = getDatasetSize(filename);
-    string outputFilename = "heap_sort_dataset_" + to_string(datasetSize) + ".csv";
+bool writeSortedOutput(const string& outputFilename, const vector<Record>& records, const string& inputFilename, double elapsedSeconds) {
     ofstream outputFile(outputFilename);
-    
-    if (outputFile.is_open()) {
-        // Output format matching criteria 
-        for (const auto& rec : records) {
-            outputFile << rec.num << "," << rec.str << "\n";
-        }
-        outputFile.close();
+    if (!outputFile.is_open()) return false;
+
+    for (const auto& record : records) {
+        outputFile << record.num << "/" << record.str << endl;
+    }
+
+    // Append the performance breakdown to match the style found in your radix_sort file
+    outputFile << "Heap sort running time for " << inputFilename << ": "
+               << fixed << setprecision(6) << elapsedSeconds << " seconds" << endl;
+    return true;
+}
+
+void processFile(const string& filename) {
+    vector<Record> records;
+    if (!readDataset(filename, records)) {
+        cerr << "Error: Could not open file " << filename << endl;
+        return;
+    }
+
+    auto start = chrono::high_resolution_clock::now();
+    heapSort(records);
+    auto end = chrono::high_resolution_clock::now();
+
+    chrono::duration<double> elapsed = end - start;
+    string outputFilename = getOutputFilename(filename);
+
+    if (!writeSortedOutput(outputFilename, records, filename, elapsed.count())) {
+        cerr << "Error: Could not create output file " << outputFilename << endl;
+        return;
+    }
+
+    cout << "Heap sort running time for " << filename << ": "
+         << fixed << setprecision(6) << elapsed.count() << " seconds" << endl;
+}
+
+int main() {
+    // choose input files by commenting/uncommenting the options below
+    vector<string> inputs = {"dataset_1000.csv", "dataset_10000.csv", "dataset_100000.csv"}; // default
+    // vector<string> inputs = {"dataset_100000.csv"};
+
+    for (const string& filename : inputs) {
+        processFile(filename);
     }
 
     return 0;

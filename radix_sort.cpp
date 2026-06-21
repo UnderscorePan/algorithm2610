@@ -132,7 +132,7 @@ void processFile(const string& filename) {
 int main() {
     // choose input files by commenting/uncommenting the options below
     // vector<string> inputs = {"dataset_1000.csv"};
-    vector<string> inputs = {"dataset_1000.csv", "dataset_10000.csv"}; // default
+    vector<string> inputs = {"dataset_1000.csv", "dataset_10000.csv", "dataset_100000.csv"}; // default
     // vector<string> inputs = {"dataset_100000.csv"};
 
     for (const auto& f : inputs) processFile(f);

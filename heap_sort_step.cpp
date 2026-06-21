@@ -6,13 +6,13 @@
 // Trimester: 2610
 // Member_1: Hew Wee Bo | hewweebo@gmail.com | 0128803121
 // Member_2: ID | NAME | EMAIL | PHONE
-// Member_3: ID | JEVAANRAJ A/L RAJA KUMARAN | jevaanraj17@gmail.com | 0179651973
+// Member_3: ID | NAME | EMAIL | PHONE
 // Member_4: ID | NAME | EMAIL | PHONE
 // # *********************************************************
 // Task Distribution
 // Member_1: Hew Wee Bo
 // Member_2:
-// Member_3: Jevaanraj
+// Member_3:
 // Member_4:
 // # *********************************************************
 
@@ -29,7 +29,7 @@ struct Record {
     string str;
 };
 
-// Formats records into [num/str, num/str] style
+// format records into the required bracketed text for the trace
 string formatRecords(const vector<Record>& records) {
     stringstream ss;
     ss << "[";
@@ -41,7 +41,7 @@ string formatRecords(const vector<Record>& records) {
     return ss.str();
 }
 
-// Standard Max-Heapify logic
+// standard max-heapify operation
 void maxHeapify(vector<Record>& records, int n, int i) {
     int largest = i;
     int left = 2 * i + 1;
@@ -54,7 +54,10 @@ void maxHeapify(vector<Record>& records, int n, int i) {
         largest = right;
 
     if (largest != i) {
-        swap(records[i], records[largest]);
+        Record temp = records[i];
+        records[i] = records[largest];
+        records[largest] = temp;
+
         maxHeapify(records, n, largest);
     }
 }
@@ -71,6 +74,7 @@ int getDatasetSize(const string& filename) {
     return 0;
 }
 
+// read only rows from startRow to endRow (1-indexed)
 bool readRowRange(const string& filename, int startRow, int endRow, vector<Record>& records) {
     ifstream inputFile(filename);
     if (!inputFile.is_open()) return false;
@@ -101,49 +105,54 @@ string getStepOutputFilename(const string& inputFilename, int startRow, int endR
     return outputSS.str();
 }
 
-int main(int argc, char* argv[]) {
-    if (argc != 4) {
-        cerr << "Usage: " << argv[0] << " <dataset_file.csv> <start_row> <end_row>" << endl;
-        return 1;
-    }
-    
-    string filename = argv[1];
-    int startRow = stoi(argv[2]);
-    int endRow = stoi(argv[3]);
+int main() {
+    // choose one input set by uncommenting the line you want
+    string filename = "dataset_1000.csv"; int startRow = 1;  int endRow = 7; // default
+    // string filename = "dataset_10000.csv"; int startRow = 10; int endRow = 20;
+    // string filename = "dataset_100000.csv"; int startRow = 100; int endRow = 110;
 
     vector<Record> records;
     if (!readRowRange(filename, startRow, endRow, records)) {
         cerr << "Error: Could not open file " << filename << endl;
         return 1;
     }
-    
+
     if (records.empty()) {
-        cerr << "Error: Range out of bounds or empty data." << endl;
+        cerr << "Error: start_row or end_row out of range for file " << filename << endl;
         return 1;
     }
 
     string outputFilename = getStepOutputFilename(filename, startRow, endRow);
+
     ofstream outputFile(outputFilename);
     if (!outputFile.is_open()) {
-        cerr << "Error creating output file." << endl;
+        cerr << "Error: Could not create output file " << outputFilename << endl;
         return 1;
     }
 
     int n = (int)records.size();
 
-    // 1. Build initial max heap
+    // 1. build max heap
     for (int i = n / 2 - 1; i >= 0; i--) {
         maxHeapify(records, n, i);
     }
     outputFile << formatRecords(records) << " initial" << endl;
 
-    // 2. Extract elements one by one and track steps
+    // 2. extract elements one by one from heap
     for (int i = n - 1; i > 0; i--) {
-        swap(records[0], records[i]);
+        Record temp = records[0];
+        records[0] = records[i];
+        records[i] = temp;
+
         maxHeapify(records, i, 0);
-        outputFile << formatRecords(records) << " i=" << i << endl; 
+        outputFile << formatRecords(records) << " i=" << i << endl;
     }
-    
+
     outputFile.close();
+
+    // Console output tracking confirmation
+    cout << "Successfully traced heap sort steps for rows " << startRow << " to " << endRow << endl;
+    cout << "Output exported to: " << outputFilename << endl;
+
     return 0;
 }

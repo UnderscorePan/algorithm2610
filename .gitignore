@@ -1,6 +1,9 @@
 dataset_*.csv
 radix_sorted_dataset_*.csv
+heap_sort_dataset_*.csv
 *_radix_sorted_step_*.txt
+hash_table_search_*.txt
+hash_table_search_step_*.txt
 *.o
 *.obj
 *.exe
@@ -8,3 +11,7 @@ radix_sorted_dataset_*.csv
 dataset_generator
 /radix_sort
 /radix_sort_step
+/heap_sort
+/heap_sort_step
+/hash_table_search
+/hash_table_search_step
