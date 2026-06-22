@@ -5,7 +5,7 @@
 // Tutorial Class: TT5L
 // Trimester: 2610
 // Member_1: HEW WEE BO | hew.wee.bo@student.mmu.edu.my | 0128803121
-// Member_2: ID | JEVAANRAJ A/L RAJA KUMARAN | jevaanraj17@gmail.com | 0179651973
+// Member_2: ID | JEVAANRAJ A/L RAJA KUMARAN | jevaanraj.raja.kumaran@student.mmu.edu.my | 0179651973
 // Member_3: ID | SHANJIF CAKRAVRTHI A/L KUPPAN @ SIVA KUMAR | shanjif.cakravthi@student.mmu.edu.my | 0195601010
 // Member_4: ID | TEH ZHAO JIN | teh.zhao.jin@student.mmu.edu.my | 01111279290
 // # *********************************************************
